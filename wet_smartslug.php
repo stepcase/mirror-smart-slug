@@ -29,6 +29,7 @@ class wet_smartslug {
 
 	function smart_slug($slug, $post_ID, $post_status, $post_type, $post_parent, $original_slug='' /* @since WP3.5 */) {
 		if ($slug === '') return '';
+		if ($post_status == 'publish' || $post_status == 'private') return $slug;
 
 		$old_slug = $slug;
 		// strip out too short parts and members of the stoplist array
