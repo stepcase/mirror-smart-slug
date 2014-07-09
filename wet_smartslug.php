@@ -28,6 +28,7 @@ class wet_smartslug {
 	}
 
 	function smart_slug($slug, $post_ID, $post_status, $post_type, $post_parent, $original_slug='' /* @since WP3.5 */) {
+		global $wpdb;
 		if ($slug === '') return '';
 		if ($post_status == 'publish' || $post_status == 'private') return $slug;
 
@@ -47,6 +48,21 @@ class wet_smartslug {
 		} else {
 			$slug = join('-', $out);
 		}
+
+		//is the slug used ?
+		$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND ID != %d LIMIT 1";
+		$post_name_check = $wpdb->get_var( $wpdb->prepare( $check_sql, $slug, $post_type, $post_ID ) );
+
+		if ( $post_name_check  ) {
+			$suffix = 2;
+			do {
+				$alt_post_name = _truncate_post_slug( $slug, 200 - ( strlen( $suffix ) + 1 ) ) . "-$suffix";
+				$post_name_check = $wpdb->get_var( $wpdb->prepare( $check_sql, $alt_post_name, $post_type, $post_ID ) );
+				$suffix++;
+			} while ( $post_name_check );
+			$slug = $alt_post_name;
+		}
+
 		return $slug;
 	}
 
